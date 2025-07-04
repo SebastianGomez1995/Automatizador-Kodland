@@ -6,7 +6,7 @@ contacto de estudiantes desde un enlace de grupo de Kodland.
 
 Características principales
 ---------------------------
-* **Iniciar / Continuar / Detener** el proceso de scraping en un hilo de fondo para que
+* **Iniciar** el proceso de scraping en un hilo de fondo para que
   la interfaz no se congele.
 * **Actualizaciones en vivo** – los mensajes generados por el scraper aparecen
   inmediatamente en la barra de estado.

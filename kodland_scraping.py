@@ -79,15 +79,19 @@ class KodlandScraper:
         """
         options = Options()
         options.add_argument("--start-maximized")
-        usuario = "sgomez5977"
-        contrasena = "xxFMbbDDBx"
-
+        
+        
+        
         self.driver = webdriver.Chrome(options=options)
         self.driver.get("https://backoffice.kodland.org/es/login/")
-
-        self.driver.find_element(By.ID, "id_username").send_keys(usuario)
-        self.driver.find_element(By.ID, "id_password").send_keys(contrasena)
-        self.driver.find_element(By.CLASS_NAME, "login-button").click()
+        
+        with open('contraseña.txt', 'r', encoding='utf-8') as f:
+            contenido = f.read()
+        if contenido != "":
+            data = [u.strip().replace('"', '') for u in contenido.split(',') if u.strip()]
+            self.driver.find_element(By.ID, "id_username").send_keys(data[0])
+            self.driver.find_element(By.ID, "id_password").send_keys(data[1])
+            self.driver.find_element(By.CLASS_NAME, "login-button").click()
 
     def crear_enlaces(self):
         """
@@ -165,7 +169,7 @@ class KodlandScraper:
             self.contacto_mensaje.put((nombre, telefono, pais))
             contactos.append([nombre, telefono, copiado, pais])
             time.sleep(1)
-        self.log(f"Estudiantes procesados: {len(contactos)}/{len(contactos)}")
+        self.log(f"Estudiantes: {len(contactos)}/{len(contactos)}")
         return contactos
 
     def exportar_contactos(self, contactos):
