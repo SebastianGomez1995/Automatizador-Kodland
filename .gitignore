@@ -1,0 +1,34 @@
+# Ignorar archivos binarios y ejecutables
+chromedriver.exe
+*.exe
+
+# Ignorar archivos sensibles
+contraseña.txt
+mensajes_estudiantes.txt
+student_links.txt
+contactos_google.csv
+
+# Ignorar archivos compilados de Python
+__pycache__/
+*.py[cod]
+
+# Ignorar archivos temporales
+*.log
+*.tmp
+*.bak
+
+# Ignorar directorios del sistema o del entorno
+.env/
+.venv/
+env/
+venv/
+.idea/
+.vscode/
+.DS_Store
+
+# Ignorar directorio del driver redundante
+chromedriver-win64/
+
+# Ignorar archivos de licencia de terceros si no se quieren versionar
+LICENSE.chromedriver
+THIRD_PARTY_NOTICES.chromedriver

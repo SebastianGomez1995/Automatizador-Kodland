@@ -1,7 +1,11 @@
-url = "https://bo.kodland.org/groups/39793"
-if "groups" in url:
-    print("Esta en grupos")
-else:
-    print("No esta en grupos")
+import time
+url = []
+while True:
+    if url:
+        print("lleno")
+        time.speed()
+    else:
+        print("vacio")
+        break
 
-print("Hola")
+
