@@ -12,7 +12,6 @@ el hilo del scraper y la interfaz principal.
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 import time, csv, pyperclip, phonenumbers, pycountry
 from selenium.common.exceptions import NoSuchElementException
 
@@ -75,7 +74,9 @@ class KodlandScraper:
     def iniciar_navegador(self):
         """
         Configura el navegador Chrome y accede a la página de login.
-        Llena el formulario de usuario y contraseña automáticamente.
+        Llena el formulario de usuario y contraseña automáticamente si existe un archivo llamado "contraseña.txt"
+        con el nombre de usuario y contraseña del tutor del cusro separados por comas.
+        si no existe, solicita los datos manualmente.
         """
         options = Options()
         options.add_argument("--start-maximized")
@@ -96,7 +97,8 @@ class KodlandScraper:
     def crear_enlaces(self):
         """
         Recorre la tabla/lista de estudiantes en la plataforma Kodland
-        y guarda enlaces individuales a cada perfil de estudiante.
+        y guarda enlaces individuales a cada perfil de estudiante en un archivo llamado "student_link.txt".
+        funciona para las dos versiones de la plataforma(nueva y vieja).
         """
         self.driver.get(self.url)
         time.sleep(3)
@@ -174,7 +176,7 @@ class KodlandScraper:
 
     def exportar_contactos(self, contactos):
         """
-        Exporta los contactos al formato CSV de Google Contacts.
+        Exporta los contactos al formato CSV de Google Contacts para ser importado en Google Contacts.
         Cada fila contiene: Nombre, Teléfono
         """
         with open('contactos_google.csv', 'w', newline='', encoding='utf-8') as f:
@@ -186,6 +188,7 @@ class KodlandScraper:
         """
         Usa la librería phonenumbers para detectar el país a partir del número.
         Devuelve el nombre del país, o "Desconocido" si no se puede determinar.
+        lo que puede ayudar a un modulo futuro que genere el mensaje de bienvenida al curso con la hora de la clase para cada pais.
         """
         try:
             parsed = phonenumbers.parse(numero, None)

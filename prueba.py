@@ -7,7 +7,6 @@ if contenido != "":
 else:
     data = [u.strip().replace('"', '') for u in contenido.split(',') if u.strip()]
     
-    print(urls)
     
 
 

@@ -1,0 +1,4 @@
+phonenumbers==9.0.8
+pycountry==24.6.1
+pyperclip==1.9.0
+selenium==4.34.0

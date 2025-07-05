@@ -12,7 +12,7 @@ Características principales
   inmediatamente en la barra de estado.
 * **Lista de contactos en tiempo real** – los nuevos contactos se muestran
   automáticamente en un `ttk.Treeview`.
-* **Acciones útiles** – generación de mensajes personalizados y exportación de contactos
+* **Acciones útiles** – generación de mensajes personalizados con usuario y contraseña de la plataforma Kodland  y exportación de contactos
   en formato CSV compatible con Google.
 
 La clase :class:`SeleniumInterface` contiene todos los elementos gráficos y la lógica
@@ -28,13 +28,10 @@ Ejecuta este archivo directamente:
 """
 
 import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox
-from selenium.webdriver.common.by import By
-from kodland_scraping import KodlandScraper
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from selenium import webdriver
+from tkinter import ttk, messagebox
 import threading, queue
+from kodland_scraping import KodlandScraper
+
 
 class SeleniumInterface:
     def __init__(self, root):
@@ -137,11 +134,12 @@ class SeleniumInterface:
         ttk.Button(list_buttons_frame, text="Generar Mensajes", command=self.generar_mensaje).pack(side=tk.LEFT, padx=(0, 10))
         ttk.Button(list_buttons_frame, text="Exportar CSV", command=self.exportar_csv).pack(side=tk.LEFT)
 
-        self.btn_continuar = ttk.Button(list_buttons_frame, text="Continuar", command=self.continuar_proceso, state="normal")
-        self.btn_continuar.pack(side=tk.LEFT, padx=(10, 0))
+        #los botones seran utilizados para una implementación de un modulo extra
+        ##self.btn_continuar = ttk.Button(list_buttons_frame, text="Continuar", command=self.continuar_proceso, state="normal")
+        ##self.btn_continuar.pack(side=tk.LEFT, padx=(10, 0))
 
-        self.btn_detener = ttk.Button(list_buttons_frame, text="Detener", command=self.detener_proceso, state="normal")
-        self.btn_detener.pack(side=tk.LEFT, padx=(10, 0))
+        ##self.btn_detener = ttk.Button(list_buttons_frame, text="Detener", command=self.detener_proceso, state="normal")
+        ##self.btn_detener.pack(side=tk.LEFT, padx=(10, 0))
 
         main_frame.rowconfigure(4, weight=1)
         self.mensaje.put("Ingresa el enlace del grupo que quieras extraer la información")
@@ -174,7 +172,9 @@ class SeleniumInterface:
             self.tree_contactos.see(children[-1])
 
     def generar_mensaje(self):
-        """Genera mensajes personalizados con usuario y contraseña para cada contacto."""
+        """Genera mensajes personalizados con usuario y contraseña para cada contacto.
+           se guarda en un archivo de texto llamado "mensajes_estudiantes.txt" para poder ser enviado a cada estudiante al iniciar el curso 
+        """
         mensaje_base = """¡Hola {nombre}! 🌟\nAquí están tus datos de acceso para que puedas unirte a la clase sin problemas. Asegúrate de tenerlos listos:\n\n🔑 Inicio de sesión: {usuario}\n🔒 Contraseña: {contrasena}\n\n📝 Recuerda: Guarda estos datos en un lugar seguro y no los compartas con nadie más. Si tienes problemas para iniciar sesión, avísanos y te ayudaremos.\n\n¡Nos vemos en la clase! 💡💻\n\n"""
         estudiantes = []
         self.contactos = self.scrap.contactos
@@ -209,7 +209,6 @@ class SeleniumInterface:
 
 
 def main():
-    """Punto de entrada: inicia la aplicación Tkinter."""
     root = tk.Tk()
     app = SeleniumInterface(root)
     root.mainloop()
