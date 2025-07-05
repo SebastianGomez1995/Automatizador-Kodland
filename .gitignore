@@ -8,6 +8,7 @@ mensajes_estudiantes.txt
 student_links.txt
 contactos_google.csv
 prueba.py
+contactos_google.csv
 
 # Ignorar archivos compilados de Python
 __pycache__/
