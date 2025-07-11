@@ -4,6 +4,8 @@ Este módulo proporciona una aplicación de escritorio con interfaz gráfica (Tk
 coordina un scraper basado en Selenium (`KodlandScraper`) para extraer información de
 contacto de estudiantes desde un enlace de grupo de Kodland.
 
+
+
 Características principales
 ---------------------------
 * **Iniciar** el proceso de scraping en un hilo de fondo para que
@@ -18,6 +20,8 @@ Características principales
 La clase :class:`SeleniumInterface` contiene todos los elementos gráficos y la lógica
 interactiva. Las operaciones específicas de Selenium se delegan a la clase
 `KodlandScraper` del módulo `kodland_scraping`, lo que permite una separación clara de responsabilidades.
+
+
 
 Uso
 ---
@@ -67,4 +71,14 @@ en alguna ruta del sistema (C:\Windows\System32 o una carpeta incluida en PATH)
 5. **Ejecutar la interfaz**
 >>> python kodland interfaz.py
 
+**Consejo**
+si se crea un archivo llamado "contraseña.txt"
+con nombre de usuario y contraseña del tutor,  separados por comas el programa hace todo automaticamente.
+si no creas, ingresa los datos manualmente en el navegador que se abre al iniciar el proceso, ejemplo:
+
+usuario,
+contraseña
+
+**Como Funciona**
+https://drive.google.com/file/d/1mvVxUANxmKezukOovGB3yJPxCLkivmXf/view?usp=drive_link
 """
