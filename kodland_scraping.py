@@ -14,6 +14,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import time, csv, pyperclip, phonenumbers, pycountry
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
 
 class KodlandScraper:
     def __init__(self, url, mensaje, contacto):
@@ -25,6 +28,7 @@ class KodlandScraper:
         - mensaje: cola (Queue) para enviar mensajes de estado a la interfaz
         - contacto: cola (Queue) para enviar contactos detectados a la interfaz
         """
+        
         self.driver = None
         self.driver_path = "chromedriver.exe"
         self.url = url
@@ -43,6 +47,7 @@ class KodlandScraper:
         """
         try:
             time.sleep(2)
+            self.driver.get("https://backoffice.kodland.org/es/groups/")
             self.driver.find_element(By.XPATH, '//a[contains(@href, "/logout/") and contains(text(), "Salir")]')
             print("✅ Sesión iniciada correctamente.")
             return True
@@ -81,9 +86,8 @@ class KodlandScraper:
         options = Options()
         options.add_argument("--start-maximized")
         
+        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
         
-        
-        self.driver = webdriver.Chrome(options=options)
         self.driver.get("https://backoffice.kodland.org/es/login/")
         
         with open('contraseña.txt', 'r', encoding='utf-8') as f:
