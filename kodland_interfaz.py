@@ -31,6 +31,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import threading, queue
 from kodland_scraping import KodlandScraper
+import os
+from tkinter import filedialog
 
 
 class SeleniumInterface:
@@ -50,10 +52,15 @@ class SeleniumInterface:
         self.scrap = None
         self.crear_interfaz()
 
-    def iniciar_scraping(self, enlace):
+    def iniciar_scraping(self, enlace, ruta = ''):
         """Inicia el scraper en un hilo separado para no congelar la interfaz."""
-        self.scrap = KodlandScraper(enlace, self.mensaje, self.contactos_mensaje)
-        threading.Thread(target=self.scrap.iniciarProceso, daemon=True).start()
+        self.limpiar_datos()
+        if  ruta != '':
+            self.scrap = KodlandScraper(enlace, self.mensaje, self.contactos_mensaje)
+            threading.Thread(target=self.scrap.cargar, args=(ruta,), daemon=True).start()
+        else:
+            self.scrap = KodlandScraper(enlace, self.mensaje, self.contactos_mensaje)
+            threading.Thread(target=self.scrap.iniciarProceso, daemon=True).start()
 
     def actualizar_mensajes(self):
         """Revisa la cola de mensajes y actualiza el estado en la interfaz si hay nuevos mensajes."""
@@ -135,10 +142,10 @@ class SeleniumInterface:
         ttk.Button(list_buttons_frame, text="Exportar CSV", command=self.exportar_csv).pack(side=tk.LEFT)
 
         #los botones seran utilizados para una implementación de un modulo extra
-        ##self.btn_continuar = ttk.Button(list_buttons_frame, text="Continuar", command=self.continuar_proceso, state="normal")
-        ##self.btn_continuar.pack(side=tk.LEFT, padx=(10, 0))
+        self.btn_continuar = ttk.Button(button_frame, text="Cargar Grupo", command=self.continuar_proceso, state="normal")
+        self.btn_continuar.pack(side=tk.LEFT, padx=(10, 0))
 
-        ##self.btn_detener = ttk.Button(list_buttons_frame, text="Detener", command=self.detener_proceso, state="normal")
+        ##self.btn_detener = ttk.Button(button_frame, text="Detener", command=self.detener_proceso, state="normal")
         ##self.btn_detener.pack(side=tk.LEFT, padx=(10, 0))
 
         main_frame.rowconfigure(4, weight=1)
@@ -155,9 +162,64 @@ class SeleniumInterface:
             return
         self.iniciar_scraping(enlace)
 
+    
+
     def continuar_proceso(self):
-        """(Reservado para implementación futura de reanudación del scraping)."""
-        pass
+        """Abre un cuadro de diálogo para elegir una carpeta y muestra las subcarpetas en una lista seleccionable."""
+        # Seleccionar carpeta raíz
+        """carpeta_base = filedialog.askdirectory(title="Selecciona la carpeta base")
+        if not carpeta_base:
+            return"""
+        carpeta_base = "kodland"
+        # Obtener subcarpetas
+        subcarpetas = [nombre for nombre in os.listdir(carpeta_base)
+                        if os.path.isdir(os.path.join(carpeta_base, nombre))]
+
+        if not subcarpetas:
+            messagebox.showinfo("Información", "No se encontraron subcarpetas en la carpeta seleccionada.")
+            return
+
+        # Crear ventana emergente
+        ventana_lista = tk.Toplevel(self.root)
+        ventana_lista.title("Selecciona una carpeta del grupo")
+        ventana_lista.geometry("400x300")
+        ventana_lista.grab_set()  # Bloquea la ventana principal mientras está abierta
+
+        ttk.Label(ventana_lista, text="Selecciona una carpeta:").pack(pady=10)
+
+        # Lista de carpetas
+        lista = tk.Listbox(ventana_lista, font=("Helvetica", 12))
+        lista.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        for carpeta in subcarpetas:
+            lista.insert(tk.END, carpeta)
+
+        # Botón de selección
+        def seleccionar():
+            seleccion = lista.get(tk.ACTIVE)
+            if seleccion:
+                ruta = f'kodland\{seleccion}\link.txt'
+                ventana_lista.destroy()
+                if os.path.isfile(ruta):
+                    with open(ruta, 'r', encoding='utf-8') as f:
+                        enlace = f.read()
+                    confirmacion = messagebox.askyesno("Confirmar", "¿Desea Cargar los datos sin actualizarlos?, para actualizar tendras que iniciar sesion")
+                    if confirmacion:
+                        self.iniciar_scraping(enlace, f'kodland\{seleccion}')
+                    else:
+                        self.iniciar_scraping(enlace)
+
+        ttk.Button(ventana_lista, text="Seleccionar", command=seleccionar).pack(pady=10)
+        
+    def limpiar_datos(self):
+        for item in self.tree_contactos.get_children():
+            self.tree_contactos.delete(item)
+
+        # Vaciar listas internas
+        self.contactos.clear()
+        if self.scrap:
+            self.scrap.contactos.clear()
+
 
     def detener_proceso(self):
         """(Reservado para implementación futura de detener el scraping en curso)."""
@@ -200,6 +262,7 @@ class SeleniumInterface:
         copy = []
         for contacto in self.contactos:
             copy.append([etiqueta.upper() + " " + contacto[0], contacto[1]])
+        print(copy)
         self.scrap.exportar_contactos(copy)
         messagebox.showinfo("Información", "Datos exportados a 'contactos_google.csv'")
 

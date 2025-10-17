@@ -27,6 +27,7 @@ venv/
 .idea/
 .vscode/
 .DS_Store
+kodland/
 
 # Ignorar directorio del driver redundante
 chromedriver-win64/

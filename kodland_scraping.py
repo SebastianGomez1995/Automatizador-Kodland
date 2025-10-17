@@ -16,6 +16,8 @@ import time, csv, pyperclip, phonenumbers, pycountry
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+import os, ast
+
 
 
 class KodlandScraper:
@@ -35,6 +37,8 @@ class KodlandScraper:
         self.contactos = []
         self.mensaje_ = mensaje
         self.contacto_mensaje = contacto
+        self.nombre_grupo = ''
+    
 
     def log(self, mensaje):
         """Envía un mensaje a la cola de estado para mostrarlo en la interfaz."""
@@ -64,17 +68,78 @@ class KodlandScraper:
         - Obtiene contactos
         - Cierra el navegador
         """
+        
         self.log("Inicia sesión en el navegador")
         self.iniciar_navegador()
         while True:
             time.sleep(5)
             if self.verificar_sesion_iniciada():
                 break
+        self.load_data()
+        with open(f"{self.ruta}\link.txt", "w", encoding="utf-8") as archivo:
+            archivo.write(f'{self.url}')
+        self.driver.quit()
+    
+    def cmpfile(self):
+        file1 = f'{self.ruta}\student_links.txt'
+        file2 = f'{self.ruta}\student_links_copy.txt'
+        
+        
+        if os.path.isfile(file1) and os.path.isfile(file2):
+            with open(file1, 'r', encoding='utf-8') as f:
+                contenido1 = f.read()
+            with open(file2, 'r', encoding='utf-8') as f:
+                    contenido2 = f.read()
+            
+            urls = [u.strip().replace('"', '') for u in contenido1.split(',') if u.strip()]
+            urls1 = [u.strip().replace('"', '') for u in contenido2.split(',') if u.strip()]
+            for u in urls:
+                if u not in urls1:
+                    return False
+            return True
+    def cargar(self,ruta):
+        if os.path.isfile(f'{ruta}\data.txt'):    
+                with open(f"{ruta}\data.txt", 'r', encoding='utf-8') as f:
+                    contenido = f.read()
+                bloques = [b.strip() for b in contenido.split('-') if b.strip()]
+
+                self.contactos = []
+                for bloque in bloques:
+                    bloque = bloque.strip()
+                    if bloque.startswith('"') and bloque.endswith('"'):
+                        bloque = bloque[1:-1]  # quitar comillas dobles externas
+                    try:
+                        contacto = ast.literal_eval(bloque)
+                        self.contactos.append(contacto)
+                    except Exception as e:
+                        print("❌ Error en bloque:", bloque, e)
+
+                for contacto in self.contactos:
+                    self.contacto_mensaje.put((contacto[0], contacto[1], contacto[3]))
+        
+    
+    def name_grupo(self):
+        self.driver.get(self.url)
+        try:
+            self.nombre_grupo = self.driver.find_element(By.CSS_SELECTOR, "h1, h2,h4,h3, .group-name, .course-title").text
+            self.ruta = f'kodland\{self.nombre_grupo}'
+            if os.path.isdir(self.ruta):
+                self.log("La Carpeta ya existe prueba con cargar la informacion")
+            else: 
+                os.mkdir(self.ruta)
+        except:
+            raise
+        
+    def load_data(self):
+        
+        self.name_grupo()
         self.log("Creando enlaces, espere un momento")
         self.crear_enlaces()
-        self.contactos = self.crear_contactos()
-        
-        self.driver.quit()
+
+        if self.cmpfile():
+            self.cargar(self.ruta)
+        else:
+            self.contactos = self.crear_contactos()
 
     def iniciar_navegador(self):
         """
@@ -108,7 +173,7 @@ class KodlandScraper:
         time.sleep(3)
         tag = "tr" if "groups" not in self.url else "div"
         student_links = []
-
+        
         filas = self.driver.find_elements(By.TAG_NAME, tag)
         for fila in filas:
             try:
@@ -126,11 +191,17 @@ class KodlandScraper:
                 continue
 
         student_links = list(set(student_links))  # eliminar duplicados
-
-        with open("student_links.txt", "w", encoding="utf-8") as archivo:
+        if os.path.isfile(f'{self.ruta}\student_links.txt'):
+            d = f'{self.ruta}\student_links_copy.txt'
+        else:
+            d = f'{self.ruta}\student_links.txt'
+            
+        
+        with open(d, "w", encoding="utf-8") as archivo:
             for link in student_links:
                 archivo.write(f'"{link}",\n')
-
+        
+                
     def crear_contactos(self):
         """
         Visita cada enlace de estudiante guardado y extrae:
@@ -141,7 +212,7 @@ class KodlandScraper:
 
         Devuelve una lista de listas [[nombre, telefono, credenciales, pais], ...]
         """
-        with open('student_links.txt', 'r', encoding='utf-8') as f:
+        with open(f"{self.ruta}\student_links.txt", 'r', encoding='utf-8') as f:
             contenido = f.read()
 
         urls = [u.strip().replace('"', '') for u in contenido.split(',') if u.strip()]
@@ -176,6 +247,9 @@ class KodlandScraper:
             contactos.append([nombre, telefono, copiado, pais])
             time.sleep(1)
         self.log(f"Estudiantes: {len(contactos)}/{len(contactos)}")
+        with open(f'{self.ruta}\data.txt', 'w', newline='', encoding='utf-8') as archivo:
+            for data in contactos:
+                archivo.write(f'{data}-\n')
         return contactos
 
     def exportar_contactos(self, contactos):
@@ -183,7 +257,7 @@ class KodlandScraper:
         Exporta los contactos al formato CSV de Google Contacts para ser importado en Google Contacts.
         Cada fila contiene: Nombre, Teléfono
         """
-        with open('contactos_google.csv', 'w', newline='', encoding='utf-8') as f:
+        with open(f'{self.ruta}\contactos_google.csv', 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             writer.writerow(["Nombre", "Telefono"])
             writer.writerows(contactos)
